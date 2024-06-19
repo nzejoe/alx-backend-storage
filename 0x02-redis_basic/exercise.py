@@ -3,8 +3,9 @@
 '''
 import uuid
 import redis
-from typing import Union, Callable, Any
 from functools import wraps
+from typing import Any, Callable, Union
+
 
 def count_calls(method: Callable) -> Callable:
     '''Tracks the number of calls made to a method in a Cache class.
@@ -17,6 +18,7 @@ def count_calls(method: Callable) -> Callable:
             self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
     return invoker
+
 
 def call_history(method: Callable) -> Callable:
     '''Tracks the call details of a method in a Cache class.
@@ -34,6 +36,7 @@ def call_history(method: Callable) -> Callable:
             self._redis.rpush(out_key, output)
         return output
     return invoker
+
 
 def replay(fn: Callable) -> None:
     '''Displays the call history of a Cache class' method.
@@ -59,6 +62,7 @@ def replay(fn: Callable) -> None:
             fxn_output,
         ))
 
+
 class Cache:
     '''Represents an object for storing data in a Redis data storage.
     '''
@@ -67,7 +71,7 @@ class Cache:
         '''
         self._redis = redis.Redis()
         self._redis.flushdb(True)
-    
+
     @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
@@ -96,4 +100,3 @@ class Cache:
         '''Retrieves an integer value from a Redis data storage.
         '''
         return self.get(key, lambda x: int(x))
-
